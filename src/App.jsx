@@ -1,118 +1,90 @@
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from "react";
+import { Loader } from "./components/Loader";
+import { Message } from "./components/Message";
+import { PostCard } from "./components/PostCard";
+import { SearchInput } from "./components/SearchInput";
+
+const API_URL = "https://jsonplaceholder.typicode.com/posts";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [posts, setPosts] = useState([]);
+  const [searchText, setSearchText] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  async function getPosts() {
+    setIsLoading(true);
+    setError("");
+
+    try {
+      const response = await fetch(API_URL);
+
+      if (!response.ok) {
+        throw new Error("Ошибка при загрузке данных");
+      }
+
+      const data = await response.json();
+      setPosts(data);
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    getPosts();
+  }, []);
+
+  const filteredPosts = useMemo(() => {
+    return posts.filter((post) =>
+      post.title.toLowerCase().includes(searchText.toLowerCase())
+    );
+  }, [posts, searchText]);
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <div className="app">
+      <main className="container">
+        <h1>Posts Search App</h1>
 
-      <div className="ticks"></div>
+        <p className="description">
+          Приложение загружает список постов и позволяет искать их по заголовку.
+        </p>
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+        <SearchInput value={searchText} onChange={setSearchText} />
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+        {!isLoading && !error && (
+          <p className="count">Найдено: {filteredPosts.length}</p>
+        )}
+
+        {isLoading && <Loader />}
+
+        {error && (
+          <Message
+            title="Произошла ошибка"
+            text={error}
+            buttonText="Попробовать снова"
+            onButtonClick={getPosts}
+          />
+        )}
+
+        {!isLoading && !error && filteredPosts.length === 0 && (
+          <Message
+            title="Ничего не найдено"
+            text="Попробуйте ввести другой текст."
+          />
+        )}
+
+        {!isLoading && !error && filteredPosts.length > 0 && (
+          <div className="posts">
+            {filteredPosts.map((post) => (
+              <PostCard key={post.id} title={post.title} body={post.body} />
+            ))}
+          </div>
+        )}
+      </main>
+    </div>
+  );
 }
 
-export default App
+export default App;
