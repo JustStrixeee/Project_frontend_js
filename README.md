@@ -23,5 +23,15 @@
 
 Используется публичный API:
 
+
+## Запуск проекта
+
+    npm install
+
+## Сборка проекта
+
+    npm run build
+
 ```text
 https://jsonplaceholder.typicode.com/posts
+
