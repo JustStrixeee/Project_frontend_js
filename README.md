@@ -32,6 +32,11 @@
 
     npm run build
 
+## Запуск на мобиле
+    npm run dev -- --host
+    Local:   http://localhost:5173/
+    Network: http://192.168.1.34:5173/
+
 ```text
 https://jsonplaceholder.typicode.com/posts
 

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Loader } from "./components/Loader";
 import { Message } from "./components/Message";
 import { PostCard } from "./components/PostCard";
@@ -12,7 +12,7 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
-  async function getPosts() {
+  const getPosts = useCallback(async () => {
     setIsLoading(true);
     setError("");
 
@@ -30,11 +30,11 @@ function App() {
     } finally {
       setIsLoading(false);
     }
-  }
+  }, []);
 
   useEffect(() => {
     getPosts();
-  }, []);
+  }, [getPosts]);
 
   const filteredPosts = useMemo(() => {
     return posts.filter((post) =>
@@ -48,7 +48,8 @@ function App() {
         <h1>Posts Search App</h1>
 
         <p className="description">
-          Приложение загружает список постов и позволяет искать их по заголовку.
+          Приложение загружает список постов из API и позволяет искать их по
+          заголовку.
         </p>
 
         <SearchInput value={searchText} onChange={setSearchText} />
